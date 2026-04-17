@@ -4,7 +4,7 @@ Personal AI model management and inference platform, built on [OpenClaw](https:/
 
 **Version:** 2026.2.21 | **Docs:** [docs.openclaw.ai](https://docs.openclaw.ai) | **Discord:** [discord.gg/qkhbAGHRBT](https://discord.gg/qkhbAGHRBT) | **License:** MIT
 
-AttiClaw is your own standalone web dashboard for browsing, downloading, and running AI models locally. It pulls features from multiple upstream open-source projects (OpenClaw, ClawX, llama.cpp, IronClaw, ZeroClaw, and more) while maintaining a clean fork-based architecture.
+AttiClaw is your standalone web dashboard for browsing, downloading, and running AI models locally. It combines a React-based management UI with the full OpenClaw autonomous agency engine — giving you a council of local AI models, hybrid memory, 50+ skills, 37 channel extensions, real-time voice, and native apps across macOS, iOS and Android.
 
 ## Table of Contents
 
@@ -34,591 +34,705 @@ AttiClaw is your own standalone web dashboard for browsing, downloading, and run
 - [Contributing](#contributing)
 - [License](#license)
 
+---
+
 ## Architecture Overview
 
 ```
-                        YOUR APP
-                    ┌──────────────┐
-                    │   AttiClaw   │  ← Standalone web dashboard
-                    │  (React+Vite │     Port 5180
-                    │   ShadCN/UI) │     Your own branding & features
-                    └──────┬───────┘
-                           │
-              ┌────────────┼────────────┐
-              │            │            │
-              v            v            v
-     ┌────────────┐ ┌───────────┐ ┌──────────┐
-     │  OpenClaw   │ │  Storage  │ │  Models  │
-     │  Gateway    │ │ SMB+NVMe  │ │ HuggingFace│
-     │  ws://3100  │ │ Client    │ │ Hub Client │
-     └──────┬─────┘ └─────┬─────┘ └─────┬────┘
-            │              │              │
-     ┌──────┴──────┐  ┌───┴───┐   ┌──────┴──────┐
-     │ Agent Loop  │  │  SMB  │   │ Download →  │
-     │ Council     │  │  (all │   │ SMB (store) │
-     │ Memory/RAG  │  │ files)│   │ NVMe (run)  │
-     │ Skills      │  └───────┘   └─────────────┘
-     └──────┬──────┘
-            │
-     ┌──────┴──────────────────────────────────┐
-     │           Inference Backends              │
-     │  Ollama │ llama.cpp │ vLLM │ LM Studio   │
-     └─────────────────────────────────────────┘
-
-     UPSTREAM FEATURE SOURCES (git submodules in repos/):
-     ┌─────────────────────────────────────────┐
-     │ clawx      │ ironclaw  │ llama.cpp      │
-     │ nanobot    │ picoclaw  │ zeroclaw       │
-     │ awesome-openclaw-usecases               │
-     └─────────────────────────────────────────┘
+                            ATTICLAW
+                       ┌──────────────────┐
+                       │   AttiClaw UI    │  React + Vite  port 5180
+                       │  Dashboard · Chat │  Tailwind · ShadCN/UI
+                       │  Models · Skills  │  Zustand · i18n (EN/ZH/JA)
+                       └────────┬─────────┘
+                                │  WebSocket  ws://3100
+                      ┌─────────┴──────────┐
+                      │                    │
+             ┌────────┴───────┐   ┌────────┴────────┐
+             │  OpenClaw Core  │   │    Storage      │
+             │  Gateway :3100  │   │  SMB (permanent)│
+             │  Agent Loop     │   │  NVMe (runtime) │
+             │  Council (3-tier│   └─────────────────┘
+             │  Memory / RAG   │
+             │  Skills · RBAC  │
+             │  Sandbox · Voice│
+             └────────┬────────┘
+                      │
+        ┌─────────────┼──────────────┐
+        │             │              │
+  ┌─────┴────┐  ┌─────┴────┐  ┌─────┴────┐
+  │  Qdrant  │  │  Neo4j   │  │ MariaDB  │
+  │ (vectors)│  │  (graph) │  │  (SQL)   │
+  └──────────┘  └──────────┘  └──────────┘
+        │             │              │
+        └─────────────┼──────────────┘
+                      │
+        ┌─────────────┼──────────────────┐
+        │             │                  │
+  ┌─────┴────┐  ┌─────┴────┐  ┌─────────┴──────┐
+  │  Ollama  │  │llama.cpp │  │ vLLM / LM Studio│
+  │  local   │  │  GGUF    │  │   transformers  │
+  └──────────┘  └──────────┘  └────────────────┘
 ```
 
-**Key principles:**
-
-- AttiClaw is YOUR app — independent from upstream projects
-- OpenClaw is the core engine (upstream fork)
-- All feature sources are git submodules with upstream remotes
-- SMB = permanent storage for everything; NVMe = fast cache for running models only
-- You choose which models to use; the system suggests better ones; you approve
+---
 
 ## Quick Start
 
 ```bash
-# Clone
-git clone https://github.com/attilaczudor/Test.git atticlaw
+git clone --recurse-submodules https://github.com/attilaczudor/Test atticlaw
 cd atticlaw
-
-# Initialize all upstream submodules
-./setup-repos.sh
-
-# Install and build OpenClaw core
-pnpm install && pnpm build
-
-# Install and start AttiClaw
-cd AttiClaw && pnpm install && pnpm dev
-# Open http://localhost:5180
-
-# In another terminal — start OpenClaw backend
-cd .. && pnpm start
+cp .env.example .env          # fill in tokens as needed
+pnpm install
+pnpm openclaw init            # interactive setup wizard
+pnpm dev                      # gateway :3100 + AttiClaw UI :5180
 ```
+
+Requires **Node.js ≥ 22.12** and **pnpm ≥ 10.23**.
+
+---
 
 ## Installation (Ubuntu)
 
-Full automated installer for Ubuntu 22.04 / 24.04:
+One-command installer for Ubuntu 22.04 / 24.04:
 
 ```bash
-sudo bash install-ubuntu.sh
+curl -fsSL https://raw.githubusercontent.com/attilaczudor/Test/main/install-ubuntu.sh | bash
 ```
 
-The installer handles everything:
+What it does:
+- Installs system dependencies, Node.js, pnpm
+- Initialises all git submodules
+- Sets up Ollama and pulls a default model
+- Configures systemd services for gateway + AttiClaw
+- Optionally configures SMB mounts for permanent model storage
 
-| Step             | What it does                             |
-| ---------------- | ---------------------------------------- |
-| 1. System deps   | build-essential, curl, git, python3, jq  |
-| 2. Storage tools | cifs-utils (SMB), nvme-cli, mount points |
-| 3. Node.js 22    | Via NodeSource                           |
-| 4. pnpm          | Via corepack                             |
-| 5. Clone repo    | Git clone + checkout                     |
-| 6. Submodules    | All 8 upstream feature sources           |
-| 7. OpenClaw core | Dependencies + TypeScript build          |
-| 8. AttiClaw app  | Dependencies + Vite build                |
-| 9. Ollama        | LLM inference backend                    |
-
-Plus: systemd services (openclaw.service, atticlaw.service), SMB mount guidance.
+Manual options:
 
 ```bash
-# Options
-sudo bash install-ubuntu.sh --headless     # Unattended, all defaults
-sudo bash install-ubuntu.sh --dir ~/ai     # Custom install path
-sudo bash install-ubuntu.sh --skip-ollama  # Skip Ollama
-sudo bash install-ubuntu.sh --skip-smb     # Skip SMB tools
+./install-ubuntu.sh --no-ollama      # skip Ollama install
+./install-ubuntu.sh --port 8080      # custom UI port
+./install-ubuntu.sh --smb //nas/ai   # pre-configure SMB share
 ```
 
-### Manual Install
-
-```bash
-# Prerequisites: Ubuntu, Node.js >= 22, pnpm
-git clone https://github.com/attilaczudor/Test.git /opt/atticlaw
-cd /opt/atticlaw
-
-# Submodules
-git submodule update --init --recursive
-./setup-repos.sh
-
-# OpenClaw core
-pnpm install && pnpm build
-
-# AttiClaw
-cd AttiClaw && pnpm install && pnpm build
-
-# LLM backend
-curl -fsSL https://ollama.ai/install.sh | sh
-ollama pull llama3.2:3b
-```
+---
 
 ## AttiClaw Web App
 
-AttiClaw is a standalone React web application — your personal AI dashboard.
+```
+AttiClaw/
+├── src/
+│   ├── pages/
+│   │   ├── Dashboard/   — system overview, storage stats, running models
+│   │   ├── Chat/        — conversation UI, connects to OpenClaw via ws://3100
+│   │   ├── Models/      — HuggingFace browse, download, approval workflow
+│   │   ├── Skills/      — repository sources, labels, URL import, skill cards
+│   │   └── Settings/    — theme, language, SMB config, NVMe selector
+│   ├── stores/          — Zustand (models, repos, sessions, settings)
+│   ├── components/      — ShadCN/UI primitives + layout + UpdateSidebar
+│   └── i18n/            — EN, ZH-CN, JA translations
+└── vite.config.ts
+```
 
-### Technology Stack
+**Stack:** React 19 · Vite · TypeScript · Tailwind CSS · ShadCN/UI · Zustand · react-i18next · Sonner
 
-| Technology        | Purpose                                        |
-| ----------------- | ---------------------------------------------- |
-| **React 19**      | UI framework                                   |
-| **Vite**          | Build tool + dev server (port 5180)            |
-| **TypeScript**    | Type safety                                    |
-| **Tailwind CSS**  | Utility-first styling                          |
-| **ShadCN/UI**     | Component library (12 components)              |
-| **Zustand**       | State management with localStorage persistence (models, settings, repos stores) |
-| **react-i18next** | Internationalization (EN, ZH, JA)              |
-| **React Router**  | Client-side routing                            |
-| **Sonner**        | Toast notifications                            |
-
-### Pages
-
-| Page          | Description                                                                                     |
-| ------------- | ----------------------------------------------------------------------------------------------- |
-| **Dashboard** | System overview — models stored, models running, SMB status, NVMe usage                         |
-| **Chat**      | Conversation interface (connects to OpenClaw agent)                                             |
-| **Models**    | HuggingFace browse, download, recommendations, approve workflow, storage config                 |
-| **Settings**  | Theme, language, SMB config, NVMe drive selector                                                |
-| **Skills**    | Browse and manage repository sources with labels, stars, and souls.directory integration        |
-
-### ShadCN/UI Components
-
-Button, Card, Badge, Tabs, Input, Select, Dialog, Progress, Separator, Switch, Tooltip, Label — all following the ShadCN convention with Radix UI primitives.
-
-### Development
+**Dev:**
 
 ```bash
 cd AttiClaw
-pnpm install
-pnpm dev          # Dev server on http://localhost:5180
-pnpm build        # Production build to dist/
-pnpm typecheck    # TypeScript checking
+pnpm dev          # :5180
+pnpm build
+pnpm preview
 ```
+
+---
 
 ## Storage Architecture
 
-Two-tier storage with clear separation of concerns:
+Two-tier storage keeps models safe while maximising inference speed:
 
 ```
-┌─────────────────────────────────────────────┐
-│              SMB Share (permanent)            │
-│  //192.168.1.100/models                      │
-│                                              │
-│  models/          ← all downloaded models    │
-│  datasets/        ← training data, samples   │
-│  voice-samples/   ← voice cloning refs       │
-│  configs/         ← model configs            │
-│  files/           ← other files              │
-└──────────────────────┬──────────────────────┘
-                       │ Load (copy)
-                       v
-┌─────────────────────────────────────────────┐
-│              NVMe Drive (runtime cache)      │
-│  /mnt/nvme-models                            │
-│                                              │
-│  ONLY running models live here               │
-│  Auto-evicts LRU when full                   │
-│  Deleted on unload (stays on SMB)            │
-└─────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                     SMB Share (NAS)                     │
+│              Permanent · All formats stored             │
+│   GGUF · SafeTensors · ONNX · AWQ · GPTQ · BitsAndBytes │
+└───────────────────────────┬─────────────────────────────┘
+                            │  copy on demand
+┌───────────────────────────┴─────────────────────────────┐
+│                  Local NVMe (runtime)                   │
+│         Active models only · Cleared on shutdown        │
+│              Fast I/O for inference engines             │
+└─────────────────────────────────────────────────────────┘
 ```
 
-| Storage   | Purpose                               | Persistence        | Access speed |
-| --------- | ------------------------------------- | ------------------ | ------------ |
-| **SMB**   | All files — models, datasets, configs | Permanent          | Network      |
-| **NVMe**  | Running models only                   | Temporary cache    | Fast local   |
-| **Cache** | Fallback when SMB disconnected        | Until SMB connects | Local disk   |
+Configure in `openclaw.json` or via the Settings page in AttiClaw.
 
-### Key behaviors
-
-- Downloads always target SMB (permanent storage)
-- Models copied to NVMe only when loaded for inference
-- Unload removes NVMe copy — model stays safe on SMB
-- Auto-evicts least-recently-used from NVMe when capacity is low
-- Auto-migrates cached files to SMB when the share reconnects
-- Non-model files (datasets, voice samples) never touch NVMe
-- SMB credentials configurable in AttiClaw Settings UI
-
-### SMB Configuration
-
-Configure via AttiClaw Settings page or `/etc/fstab`:
-
-```bash
-# Credentials file
-echo -e 'username=YOUR_USER\npassword=YOUR_PASS' > /root/.smb-credentials
-chmod 600 /root/.smb-credentials
-
-# /etc/fstab entry
-//192.168.1.100/models  /mnt/smb-models  cifs  credentials=/root/.smb-credentials,uid=1000  0  0
-```
+---
 
 ## Model Management
 
-### HuggingFace Hub Integration
+AttiClaw integrates directly with HuggingFace Hub:
 
-Browse and download models from HuggingFace directly in AttiClaw:
+| Feature | Detail |
+|---------|--------|
+| Browse & search | Filter by task, architecture, size, format |
+| Smart recommendations | Based on available VRAM / RAM |
+| One-click download | SMB → NVMe pipeline with progress |
+| Approval workflow | Council director reviews large downloads |
+| Format routing | Auto-selects the right inference backend |
+| Update tracking | Detects newer model versions upstream |
 
-| Feature               | Description                                                     |
-| --------------------- | --------------------------------------------------------------- |
-| **Search**            | Search HuggingFace by name, task, format                        |
-| **All formats**       | GGUF, SafeTensors, PyTorch, ONNX, GPTQ, AWQ                     |
-| **All tasks**         | Text generation, speech-to-speech, TTS, STT, vision, embeddings |
-| **Runtime mapping**   | Auto-detects which backends can serve each format               |
-| **Sharded models**    | Detects and handles multi-file sharded models                   |
-| **Download progress** | Real-time progress with speed and ETA                           |
+**Format → Runtime mapping:**
 
-### Format → Runtime Compatibility
+| Format | Backend |
+|--------|---------|
+| GGUF | llama.cpp / Ollama |
+| SafeTensors | vLLM / transformers / TGI |
+| ONNX | ONNX Runtime |
+| AWQ / GPTQ | vLLM (quantised GPU) |
+| BitsAndBytes | transformers (NF4 / INT8) |
 
-| Format          | Compatible Runtimes          |
-| --------------- | ---------------------------- |
-| **GGUF**        | Ollama, llama.cpp, LM Studio |
-| **SafeTensors** | vLLM, transformers, TGI      |
-| **PyTorch**     | transformers                 |
-| **ONNX**        | ONNX Runtime                 |
-| **GPTQ / AWQ**  | vLLM, transformers           |
-
-### Model Recommendations
-
-The system suggests models based on your hardware and needs. You approve or dismiss each suggestion.
-
-| Category         | Recommended Models                                                                                 |
-| ---------------- | -------------------------------------------------------------------------------------------------- |
-| **General Chat** | Qwen3-32B-GGUF (95), Llama-3.1-8B-GGUF (90), Llama-3.3-70B (96)                                    |
-| **Code**         | Qwen2.5-Coder-32B (95), Qwen2.5-Coder-7B-GGUF (88)                                                 |
-| **MoE**          | Kimi-K2.5 (94) — requires vLLM + multi-GPU                                                         |
-| **Voice**        | personaplex-7b (92, speech-to-speech), whisper-large-v3-turbo (93, STT), fish-speech-1.5 (87, TTS) |
-| **Multimodal**   | llama3-llava-next-8b (85, vision+text)                                                             |
-| **Embeddings**   | bge-m3 (94, multilingual), nomic-embed-text-v1.5 (88, 8K context)                                  |
-
-### Workflow
-
-```
-Browse HuggingFace → Select model → Download to SMB
-                                          ↓
-     System suggests better model → You approve/dismiss
-                                          ↓
-     Load to NVMe (fast cache) → Assign to backend → Inference
-                                          ↓
-     Stop model → Unload from NVMe → Stays safe on SMB
-```
+---
 
 ## Upstream Feature Sources
 
-All upstream repos are git submodules with fork + upstream remotes:
+Eight upstream repositories are tracked as git submodules under `repos/`. Run `./setup-repos.sh --update` to pull the latest from all upstreams.
 
-| Submodule                         | Upstream                                                                                        | Description                                             |
-| --------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| `repos/clawx`                     | [ValueCell-ai/ClawX](https://github.com/ValueCell-ai/ClawX)                                     | Electron desktop UI (React + Zustand + i18n)            |
-| `repos/ironclaw`                  | [nearai/ironclaw](https://github.com/nearai/ironclaw)                                           | Near AI agent infrastructure, distributed orchestration |
-| `repos/llama.cpp`                 | [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp)                                     | GGUF model inference engine                             |
-| `repos/zeroclaw`                  | [zeroclaw-labs/zeroclaw](https://github.com/zeroclaw-labs/zeroclaw)                             | Zero-shot agent framework                               |
-| `repos/nanobot`                   | [HKUDS/nanobot](https://github.com/HKUDS/nanobot)                                               | Lightweight AI agent (HKU Data Science)                 |
-| `repos/picoclaw`                  | [sipeed/picoclaw](https://github.com/sipeed/picoclaw)                                           | Edge deployment on RISC-V hardware                      |
-| `repos/artemis`                   | [Stanford-Trinity/ARTEMIS](https://github.com/Stanford-Trinity/ARTEMIS)                         | AI research framework (Stanford)                        |
-| `repos/awesome-openclaw-usecases` | [anthropics/awesome-openclaw-usecases](https://github.com/anthropics/awesome-openclaw-usecases) | 29 curated use cases (3.8k stars)                       |
-
-### Managing Upstream Repos
+| Submodule | Upstream | What it brings |
+|-----------|----------|----------------|
+| `repos/clawx` | [ValueCell-ai/ClawX](https://github.com/ValueCell-ai/ClawX) | Electron desktop UI, React + Zustand |
+| `repos/ironclaw` | [nearai/ironclaw](https://github.com/nearai/ironclaw) | Distributed orchestration, Near AI infra |
+| `repos/llama.cpp` | [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp) | GGUF inference engine |
+| `repos/zeroclaw` | [zeroclaw-labs/zeroclaw](https://github.com/zeroclaw-labs/zeroclaw) | Zero-shot agent framework |
+| `repos/nanobot` | [HKUDS/nanobot](https://github.com/HKUDS/nanobot) | Lightweight agent (HKU Data Science) |
+| `repos/picoclaw` | [sipeed/picoclaw](https://github.com/sipeed/picoclaw) | Edge deployment on RISC-V hardware |
+| `repos/artemis` | [Stanford-Trinity/ARTEMIS](https://github.com/Stanford-Trinity/ARTEMIS) | AI research framework (Stanford) |
+| `repos/awesome-openclaw-usecases` | [anthropics/awesome-openclaw-usecases](https://github.com/anthropics/awesome-openclaw-usecases) | 29 curated use cases |
 
 ```bash
-# Initialize all submodules + set upstream remotes
-./setup-repos.sh
-
-# Fetch latest from all upstreams
-./setup-repos.sh --update
-
-# Show status
-./setup-repos.sh --status
-
-# Merge upstream changes into a specific repo
-cd repos/ironclaw && git fetch upstream && git merge upstream/main
+./setup-repos.sh              # init all + set upstream remotes
+./setup-repos.sh --update     # fetch latest from all upstreams
+./setup-repos.sh --status     # show divergence status
 ```
 
-All repos use the fork pattern: `attilaczudor/<name>` (fork) ← `<org>/<name>` (upstream).
+---
 
 ## OpenClaw Core
 
-The core engine (upstream fork of [openclaw/openclaw](https://github.com/openclaw/openclaw)):
+The engine that powers everything under `src/` (88+ modules):
 
-- **Agentic reasoning** — Multi-turn loop with tool use, memory, shell execution
-- **Local-first** — Ollama, vLLM, llama.cpp, LM Studio
-- **Council-gated escalation** — Cloud only when local models lack confidence + user approval
-- **Graph memory** — Neo4j-backed knowledge graph with importance scoring and decay
-- **Hybrid RAG** — BM25 + vector similarity + graph traversal
-- **LoRA fine-tuning** — Continuous learning from high-quality interactions
-- **53 MCP skills** — Productivity, dev, communication, media, AI/ML, system
-- **37 extensions** — Discord, Slack, Telegram, WhatsApp, Signal, Matrix, IRC, and more
-- **Real-time voice** — Full-duplex with VAD and barge-in
-- **Multi-platform** — Node.js, Electron, macOS, iOS, Android
+| Capability | Detail |
+|------------|--------|
+| Agentic reasoning | Multi-turn loops, tool use, self-evaluation, max 100 turns |
+| 3-tier council | Hierarchical LLM ensemble — Director → Branches → Specialists |
+| Hybrid memory | Qdrant (vectors) + Neo4j (graph) + BM25 (keyword) |
+| 50+ MCP skills | Productivity, dev, communication, media, AI/ML, system |
+| 37 channel extensions | Discord, Slack, Telegram, Signal, iMessage, Matrix, and more |
+| Real-time voice | Full-duplex VAD, barge-in, streaming TTS/STT |
+| RBAC | 17+ permission types, path-level restrictions |
+| Sandbox | Wasm / Docker / nsjail execution isolation |
+| Smart Router | Local-first inference with council-gated cloud escalation |
+| Native apps | macOS · iOS (WatchKit) · Android |
+| LoRA fine-tuning | Continuous learning from interaction history |
+| Plugin runtime | Hot-loadable plugins with lifecycle management |
+
+---
 
 ## Council System
 
-3-tier hierarchical council for complex reasoning:
+The council is a 3-tier hierarchy of local AI models that collaborate to answer complex queries. All reasoning stays on-device unless you explicitly approve cloud escalation.
 
-| Tier   | Role       | Params | Count           | Description                                 |
-| ------ | ---------- | ------ | --------------- | ------------------------------------------- |
-| **T1** | Director   | 3-70B  | 1               | Decomposes, synthesizes, manages escalation |
-| **T2** | Branch     | 2-20B  | 2-5             | Any expertise, dispatches to specialists    |
-| **T3** | Specialist | 0.5-7B | Up to 10/branch | Small focused models, parallel answers      |
+### Tier Structure
 
-Every member has persistent memory (vector DB, graph, LoRA) across model swaps.
+```
+╔══════════════════════════════════════════════════════════════════════╗
+║                        TIER 1 — DIRECTOR                           ║
+║                                                                      ║
+║   ┌──────────────────────────────────────────────────────────────┐  ║
+║   │  Model: Dolphin Mixtral 8×7B (47B MoE, uncensored)          │  ║
+║   │  Role:  Decomposes the prompt · Assigns branches             │  ║
+║   │         Synthesises final answer · Gates cloud escalation    │  ║
+║   └──────────────────────────────────────────────────────────────┘  ║
+╚══════════════════╤═══════════════════════╤═══════════════════════════╝
+                   │                       │
+       ┌───────────┘                       └───────────┐
+       │                                               │
+╔══════╧══════════════════════╗   ╔═════════════════════╧══════════════╗
+║   TIER 2 — LOGICAL BRANCH   ║   ║   TIER 2 — CREATIVE BRANCH        ║
+║                             ║   ║                                    ║
+║  Coordinator:               ║   ║  Coordinator:                      ║
+║  Nous Hermes 34B            ║   ║  Llama-2 70B                       ║
+║                             ║   ║                                    ║
+║  Dispatches to specialists  ║   ║  Dispatches to specialists         ║
+║  Consolidates their output  ║   ║  Consolidates their output         ║
+╚══════╤══════════════════════╝   ╚═════════╤══════════════════════════╝
+       │                                    │
+  ┌────┴─────────────┐              ┌───────┴──────────────┐
+  │                  │              │                      │
+╔═╧══════════╗ ╔═════╧══════╗  ╔════╧═══════╗  ╔══════════╧═══╗
+║  TIER 3    ║ ║  TIER 3    ║  ║  TIER 3    ║  ║  TIER 3      ║
+║ Specialist ║ ║ Specialist ║  ║ Specialist ║  ║  Specialist  ║
+║            ║ ║            ║  ║            ║  ║              ║
+║ Codebooga  ║ ║  Reviewer  ║  ║  Writing   ║  ║  Research    ║
+║   34B      ║ ║   7B       ║  ║  Expert    ║  ║  Expert      ║
+║            ║ ║            ║  ║  13B       ║  ║  13B         ║
+╚════════════╝ ╚════════════╝  ╚════════════╝  ╚══════════════╝
 
-**Deliberation:** Prompt → Director decomposes → Branches dispatch → Specialists answer in parallel → Branches consolidate → Director synthesizes → Cloud escalation if needed (user approval required).
+  ← run in parallel →                ← run in parallel →
+
+                         ┌──────────────────┐
+                         │  CLOUD ESCALATION │  (requires user approval)
+                         │  GPT-4 / Claude   │  only when local confidence
+                         │  / Gemini Ultra   │  falls below threshold
+                         └──────────────────┘
+```
+
+### Tier Reference
+
+| Tier | Role | Model size | Count | Function |
+|------|------|-----------|-------|----------|
+| T1 — Director | Orchestrator | 30–70B | 1 | Decomposes prompt, assigns branches, synthesises final answer, gates cloud escalation |
+| T2 — Branch Coordinators | Mid-level reasoning | 10–34B | 2–5 | Receive sub-tasks, dispatch to specialists, consolidate results |
+| T3 — Specialists | Focused experts | 0.5–7B | 1–10 per coordinator | Single-domain answers, run in parallel for speed |
+
+### Deliberation Flow
+
+```
+User prompt
+    │
+    ▼
+┌───────────────┐
+│ T1 Director   │ ── decomposes into sub-tasks
+└───────┬───────┘
+        │
+   ┌────┴─────┐
+   ▼          ▼
+┌──────┐  ┌──────┐   ← T2 Branch Coordinators (parallel)
+│ B-1  │  │ B-2  │
+└──┬───┘  └──┬───┘
+   │          │
+ ┌─┴─┐      ┌─┴─┐
+ S S S      S S S     ← T3 Specialists (parallel within each branch)
+   │          │
+   ▼          ▼
+┌──────┐  ┌──────┐   ← branch consolidation
+│ B-1  │  │ B-2  │
+└──────┘  └──────┘
+        │
+        ▼
+┌───────────────┐
+│ T1 Director   │ ── synthesises final answer
+└───────┬───────┘
+        │
+        ├─ confidence ≥ threshold → deliver answer
+        │
+        └─ confidence < threshold → propose cloud escalation
+                                    (user approves / rejects)
+```
+
+### Persistent Member Memory
+
+Each council member retains memory across model swaps:
+
+- Isolated Qdrant vector collection per member
+- Neo4j graph tags for interaction patterns
+- LoRA adapter trained on member-specific history
+- Per-member RAG namespace
+- Metrics: query count · avg response time (EWMA) · avg confidence · error rate
+
+### Configuration
+
+```jsonc
+// openclaw.json — council section
+{
+  "council": {
+    "preset": "OPENCLAW_COUNCIL",
+    "consensusThreshold": 0.75,
+    "maxDeliberationRounds": 3,
+    "timeoutMs": 300000,
+    "requireCloudApproval": true
+  }
+}
+```
+
+---
 
 ## Memory & RAG
 
-- **Graph Memory** — Neo4j knowledge graph with node types (fact, task, contact, file, experience, summary), importance scoring (0-1), decay, auto-summarization
-- **Vector Store** — Qdrant embeddings with cosine similarity, configurable dimensions
-- **Hybrid RAG** — BM25 keyword + vector similarity + graph traversal, local embeddings
+```
+                     HYBRID MEMORY
+          ┌──────────────────────────────────┐
+          │                                  │
+  ┌───────┴──────┐  ┌──────────┐  ┌─────────┴─────┐
+  │    Qdrant    │  │  Neo4j   │  │    BM25 FTS   │
+  │  dense vec   │  │  graph   │  │  keyword idx  │
+  │  (semantic)  │  │ (entity  │  │  (SQLite-vec) │
+  │              │  │  rels)   │  │               │
+  └──────────────┘  └──────────┘  └───────────────┘
+          │              │                │
+          └──────────────┴────────────────┘
+                         │
+                  hybrid re-ranker
+                  (RRF + BM25 score)
+                         │
+                  top-k results → context window
+```
+
+- **Qdrant** — per-agent vector collections, OpenAI / Gemini / Voyage / local embeddings
+- **Neo4j** — entity relationships, cross-agent knowledge linking
+- **BM25 FTS** — SQLite-vec for fast keyword retrieval with no extra service
+- **Embedding cache** — deduplication table prevents re-embedding unchanged content
+- **LRU index cache** — bounded cache (max 100 entries) prevents memory growth
+
+---
 
 ## Smart Router
 
-Local-first with intelligent escalation:
-
 ```
-Query → Local LLM → Confidence >= 0.6? → Return
-                         ↓ NO
-         Council Deliberation → Cloud needed?
-                                    ↓ YES
-                    User Approval → Cloud API → Return
+Incoming request
+       │
+       ▼
+┌─────────────────┐
+│ Local available? │──No──► queue / notify user
+└────────┬────────┘
+         │ Yes
+         ▼
+┌─────────────────┐
+│ Confidence      │
+│ estimation      │
+└────────┬────────┘
+         │
+    ≥ threshold           < threshold
+         │                     │
+         ▼                     ▼
+  ┌─────────────┐     ┌──────────────────┐
+  │ Local model │     │ Council Director │
+  │  answers    │     │ recommends cloud │
+  └─────────────┘     └────────┬─────────┘
+                               │
+                      user approves?
+                       Yes        No
+                        │          │
+                  ┌─────┴──┐  ┌────┴───┐
+                  │ Cloud  │  │ Local  │
+                  │ model  │  │ best   │
+                  │        │  │ effort │
+                  └────────┘  └────────┘
 ```
 
-Cost controls: per-request limit ($0.50), daily budget ($10), per-provider tracking.
+Local models are always tried first. Cloud costs are shown as estimates before approval.
+
+---
 
 ## Inference Backends
 
-| Backend          | URL             | Formats                | Description                               |
-| ---------------- | --------------- | ---------------------- | ----------------------------------------- |
-| **Ollama**       | localhost:11434 | GGUF                   | Full-featured, model pulling, GPU offload |
-| **llama.cpp**    | localhost:8080  | GGUF                   | Direct GGUF serving                       |
-| **vLLM**         | localhost:8000  | SafeTensors, GPTQ, AWQ | High-throughput, PagedAttention           |
-| **LM Studio**    | localhost:1234  | GGUF                   | GUI-based, OpenAI-compatible              |
-| **transformers** | —               | All                    | Python-based, universal                   |
-| **TGI**          | —               | SafeTensors            | Text Generation Inference                 |
-| **ONNX Runtime** | —               | ONNX                   | Optimized inference                       |
+| Backend | Formats | Best for |
+|---------|---------|----------|
+| **Ollama** | GGUF | Simple local setup, CPU + GPU |
+| **llama.cpp** | GGUF | Maximum control, custom quantisation |
+| **vLLM** | SafeTensors, AWQ, GPTQ | High-throughput GPU serving |
+| **LM Studio** | GGUF, SafeTensors | Desktop GUI management |
+| **transformers** | SafeTensors, BitsAndBytes | Research, fine-tuning |
+| **TGI** | SafeTensors | Production-grade Hugging Face serving |
+| **ONNX Runtime** | ONNX | CPU-optimised edge inference |
 
-Autodiscovery probes all known ports on startup.
+Backend discovery is automatic — OpenClaw scans for running services on startup.
+
+---
 
 ## Skills & ClawHub
 
-53 bundled MCP skills across productivity, dev, communication, media, AI/ML, system, hardware, web, and home categories.
+**53 bundled MCP skills** across 6 categories:
 
-[ClawHub](https://clawhub.ai) marketplace with SHA-256 verification, VirusTotal scanning (mandatory after ClawHavoc incident — 341 malicious skills removed Feb 2026).
+| Category | Examples |
+|----------|---------|
+| Productivity | Calendar, Tasks, Notes, Email, Browser |
+| Development | Code execution, Git, Docker, terminal |
+| Communication | Send messages via any channel extension |
+| Media | Image generation, OCR, audio processing |
+| AI/ML | Model eval, embedding, dataset tools |
+| System | File ops, process management, cron |
+
+**ClawHub** is the skill marketplace — browse, install, and verify community skills. Every skill is signature-verified and optionally scanned via VirusTotal before loading.
+
+---
 
 ## Extensions
 
-37 extensions: Discord, Slack, Telegram, WhatsApp, Signal, iMessage, Matrix, IRC, LINE, Nostr, Twitch, MS Teams, Google Chat, Feishu, Mattermost, Nextcloud Talk, Zalo, Tlon, voice-call, phone-control, copilot-proxy, diagnostics-otel, and more.
+37 channel extensions ship as npm workspace packages under `extensions/`:
+
+| Tier | Channels |
+|------|---------|
+| Messaging | Discord · Slack · Telegram · Signal · iMessage · WhatsApp · Matrix |
+| Business | Mattermost · Teams · Lark · Zalo |
+| Social | Twitter/X · Mastodon · Bluesky · Reddit |
+| Voice | Twilio Voice · SIP · VoIP |
+| Webhook | Generic HTTP · REST · GraphQL |
+| IoT | MQTT · Home Assistant |
+
+---
 
 ## Voice & Media
 
-- **Real-time voice** — Full-duplex with VAD, barge-in, continuous loop
-- **TTS** — Piper (CPU) / NVIDIA NeMo Parakeet (GPU)
-- **STT** — Whisper.cpp (CPU) / NVIDIA NeMo Canary (GPU)
-- **Vision** — LLaVA via Ollama
-- **Voice models** — nvidia/personaplex-7b (speech-to-speech), fish-speech (TTS with cloning)
+**STT (Speech-to-Text):**
+- Whisper.cpp — CPU/GPU, quantised GGUF models
+- Full-duplex with voice activity detection (VAD)
+- Barge-in support (interrupt mid-response)
+
+**TTS (Text-to-Speech):**
+- Piper — fast CPU inference, 40+ voices
+- NVIDIA NeMo Parakeet — GPU-accelerated, near-real-time
+- Streaming output (tokens → audio as generated)
+
+**Voice pipeline:**
+
+```
+Microphone → VAD → Whisper STT → Agent → Response text
+                                              │
+Speaker   ←─────── Piper/Parakeet TTS ←──────┘
+```
+
+---
 
 ## Personality & Identity
 
-Persistent personality system (PersonalityDb): AI name/style/traits, user profile tracking, interaction pattern learning, conversation summarization. Multi-backend storage (SQL + Neo4j + Qdrant).
+OpenClaw builds a persistent model of the user and each council member:
+
+- **PersonalityDb** — SQL + Neo4j + Qdrant backends
+- **UserKnowledgeGraph** — maps preferences, expertise, relationships
+- **Interaction learning** — style, verbosity, creativity and rigor scores adapt over time
+- **LoRA adapters** — per-member fine-tuning from conversation history
+- **Clara** — default built-in personality with configurable traits
+
+---
 
 ## Security
 
-| Layer             | Protection                                                       |
-| ----------------- | ---------------------------------------------------------------- |
-| **Sandbox**       | Wasm/Docker/nsjail with memory+CPU limits                        |
-| **RBAC**          | 17+ permission types, path-level restrictions                    |
-| **CSRF**          | Ed25519 signed tokens on WebSocket messages                      |
-| **Origins**       | Strict allow-list (CVE-2026-25253 mitigation)                    |
-| **Rate Limiting** | Per-IP sliding window                                            |
-| **TLS**           | Optional HTTPS/WSS                                               |
-| **Skills**        | Signature verification + VirusTotal scanning                     |
-| **Downloads**     | SHA-256 hash verification                                        |
-| **Hashing**       | SHA-256 for gateway lock and tool-call IDs (migrated from SHA-1) |
-| **Secrets**       | `detect-secrets` scanning in CI/CD                               |
-| **Docker**        | Base images pinned to SHA-256 digests, non-root runtime user     |
-| **Node.js**       | Requires >= 22.12.0 (CVE-2025-59466, CVE-2026-21636 patched)     |
+11-layer security model:
 
-Recent hardening: config validation with integer overflow protection, shell injection prevention, type-safe error handling, and concurrency guards. See [`SECURITY.md`](SECURITY.md) for reporting and operational guidance.
+| Layer | Mechanism |
+|-------|-----------|
+| Transport | TLS 1.3, WSS, HSTS |
+| Auth | Ed25519 CSRF tokens on every WebSocket message |
+| Origins | Strict allowlist, CVE-2026-25253 mitigation |
+| Rate limiting | Per-IP + per-token sliding window |
+| Sandbox | Wasm / Docker / nsjail execution isolation |
+| RBAC | 17+ permission types, path-level restrictions |
+| Skills | Signature verification + optional VirusTotal scan |
+| Secrets | detect-secrets in CI, no keys in repo |
+| Hashing | SHA-256 throughout (SHA-1 fully removed) |
+| Node.js | ≥ 22.12 (CVE-2025-59466 + CVE-2026-21636 patched) |
+| Config | Schema validation, integer overflow guards |
+
+---
 
 ## Database Backends
 
-| Database    | Purpose                             | Development | Production        |
-| ----------- | ----------------------------------- | ----------- | ----------------- |
-| **Qdrant**  | Vector embeddings (RAG)             | In-memory   | VM 10.0.0.50:6333 |
-| **Neo4j**   | Knowledge graph memory              | In-memory   | VM 10.0.0.51:7474 |
-| **MariaDB** | Relational (repos, KV, personality) | SQLite      | VM 10.0.0.52:3306 |
+| Database | Role | Default port |
+|----------|------|-------------|
+| **Qdrant** | Vector store — embeddings, semantic search, per-agent collections | 6333 |
+| **Neo4j** | Knowledge graph — entity relationships, council member tags | 7687 |
+| **MariaDB** | Relational — repositories, KV store, personality data | 3306 |
+| **SQLite** | Embedded — BM25 FTS index, embedding cache, local KV | file |
+
+All four are optional — OpenClaw degrades gracefully when a backend is unavailable.
+
+---
 
 ## Deployment
 
-### Proxmox Layout
-
-```
-Proxmox Host (Threadripper, 256 GB RAM)
-│
-├── LXC 301: openclaw (Gateway + Agent)
-│   ├── ws://10.0.0.100:3100  (Gateway)
-│   ├── http://10.0.0.100:3101 (Web UI)
-│   └── http://10.0.0.100:5180 (AttiClaw)
-│
-├── VM  302: council-director (mixtral:8x7b, 32 GB)
-├── LXC 303-309: council members (T2+T3)
-│
-├── VM  310: qdrant (vector DB, 4 GB)
-├── VM  311: neo4j (graph DB, 8 GB)
-└── VM  312: mariadb (SQL, 4 GB)
-```
-
-### Docker Compose
+### Docker Compose (recommended)
 
 ```bash
-docker compose up -d    # Full stack with Qdrant, Neo4j, MariaDB
+docker compose up -d
 ```
 
-### Systemd
+Services and resource limits:
+
+| Service | CPUs | RAM | Role |
+|---------|------|-----|------|
+| openclaw | 4 | 16 GB | Gateway + Agent + Web UI |
+| qdrant | 2 | 4 GB | Vector store |
+| neo4j | 2 | 8 GB | Knowledge graph |
+| mariadb | 2 | 4 GB | Relational DB |
+
+### Proxmox Layout (Threadripper example)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              Threadripper Host  (256 GB RAM)                │
+│                                                             │
+│  LXC 301 ─ openclaw          (8 cores / 24 GB)             │
+│             Gateway :3100 · Agent · AttiClaw :5180          │
+│                                                             │
+│  VM  302 ─ council-director  (8 cores / 32 GB)             │
+│             Dolphin Mixtral 8×7B                            │
+│                                                             │
+│  LXC 303 ─ branch-logical    (4 cores / 16 GB)             │
+│  LXC 304 ─ branch-creative   (4 cores / 16 GB)             │
+│  LXC 305 ─ specialist-code   (2 cores /  8 GB)             │
+│  LXC 306 ─ specialist-review (2 cores /  8 GB)             │
+│  LXC 307 ─ specialist-write  (2 cores /  8 GB)             │
+│  LXC 308 ─ specialist-search (2 cores /  8 GB)             │
+│                                                             │
+│  VM  310 ─ qdrant            (4 cores /  8 GB)             │
+│  VM  311 ─ neo4j             (4 cores /  8 GB)             │
+│  VM  312 ─ mariadb           (2 cores /  4 GB)             │
+│                                                             │
+│  SMB NAS ─ model storage     (permanent · all formats)      │
+│  NVMe    ─ runtime cache     (fast · active models only)    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Systemd (single machine)
 
 ```bash
-sudo systemctl start openclaw    # Gateway + Agent
-sudo systemctl start atticlaw    # Web Dashboard
+sudo systemctl enable --now openclaw
+sudo systemctl enable --now atticlaw
 ```
+
+---
 
 ## Project Structure
 
 ```
-.                           Root (fork of openclaw/openclaw)
-├── AttiClaw/               YOUR APP — standalone web dashboard
-│   ├── src/
-│   │   ├── pages/          Dashboard, Chat, Models, Settings, Skills
-│   │   ├── stores/         Zustand stores (models, settings, repos)
-│   │   ├── components/     ShadCN/UI + layout (sidebar, etc.)
-│   │   └── i18n/           EN, ZH, JA translations
-│   ├── package.json        Independent from OpenClaw
-│   └── vite.config.ts      Dev server on port 5180
-│
-├── repos/                  Upstream feature source submodules
-│   ├── clawx/              ClawX desktop UI (Electron)
-│   ├── ironclaw/           Near AI agent infrastructure
-│   ├── llama.cpp/          GGUF inference engine
-│   ├── zeroclaw/           Zero-shot agent framework
-│   ├── nanobot/            Lightweight agent
-│   ├── picoclaw/           Edge deployment (RISC-V)
-│   ├── artemis/            ARTEMIS AI research (Stanford)
-│   └── awesome-openclaw-usecases/
-│
-├── src/                    OpenClaw core (88+ modules)
-│   ├── agent/              Reasoning loop
-│   ├── agents/             Agent system (auth, sandbox, tools, skills)
-│   ├── auto-reply/         Automated response handling
-│   ├── channels/           Communication channel framework
-│   ├── cli/                CLI interfaces (gateway, daemon, cron, nodes)
-│   ├── commands/           Command handlers
-│   ├── config/             Configuration management
-│   ├── council/            3-tier LLM council
-│   ├── gateway/            WebSocket server + protocol
-│   ├── hooks/              Lifecycle hooks
-│   ├── infra/              HuggingFace hub + storage client
-│   ├── memory/             Graph memory + Neo4j
-│   ├── pairing/            Device pairing
-│   ├── personality/        Personality system
-│   ├── plugins/            Plugin runtime
-│   ├── providers/          Multi-provider LLM
-│   ├── rag/                Hybrid RAG pipeline
-│   ├── rbac/               Role-based access control
-│   ├── router/             Smart Router (council-gated)
-│   ├── sandbox/            Execution sandbox
-│   ├── security/           Security subsystem
-│   ├── sessions/           Session management
-│   ├── skills/             MCP skill interface
-│   ├── tui/                Text UI interface
-│   ├── voice/              Real-time voice
-│   └── ...                 (88+ modules total)
-│
-├── Swabble/                Swift SDK package
-├── extensions/             37 channel/media extensions
-├── skills/                 53 bundled MCP skills
-├── apps/                   Native apps (macOS, iOS, Android)
-├── packages/               Workspace packages (clawdbot, moltbot)
-├── ui/                     Web UI (Vite + Vitest)
-├── docs/                   Documentation site (docs.openclaw.ai)
-├── deploy/                 Proxmox automation scripts
-├── scripts/                Build and utility scripts
-├── test/                   E2E and integration tests
-├── assets/                 Icons, images, chrome extension
-├── vendor/                 Vendored dependencies (a2ui)
-├── git-hooks/              Pre-commit hooks
-│
-├── install-ubuntu.sh       Ubuntu full-stack installer
-├── install.sh              Universal installer
-├── setup-repos.sh          Submodule init + upstream remotes
-├── openclaw.json           Runtime configuration (generated)
-└── .gitmodules             Submodule declarations
+atticlaw/
+├── AttiClaw/               — standalone React web dashboard
+│   ├── src/pages/          — Dashboard, Chat, Models, Skills, Settings
+│   ├── src/stores/         — Zustand state (models, repos, sessions, settings)
+│   └── src/components/     — ShadCN/UI + layout + UpdateSidebar
+├── Swabble/                — Swift SDK (iOS / macOS integration)
+├── src/                    — OpenClaw core engine (88+ modules)
+│   ├── agent/              — reasoning loop, agentic state machine
+│   ├── agents/             — auth, sandbox, tools coordination
+│   ├── gateway/            — WebSocket server :3100, CSRF, rate limiting
+│   ├── council/            — 3-tier council orchestration (4,200 LOC)
+│   ├── memory/             — embeddings, LRU cache, batch runners
+│   ├── rag/                — hybrid BM25 + vector + graph pipeline
+│   ├── providers/          — OpenAI, Anthropic, Gemini, local backends
+│   ├── router/             — smart router, confidence thresholding
+│   ├── sandbox/            — Wasm / Docker / nsjail isolation
+│   ├── rbac/               — 17+ permission types
+│   ├── security/           — CSRF, rate limiting, origins validation
+│   ├── skills/             — MCP skill loading and verification
+│   ├── personality/        — PersonalityDb, UserKnowledgeGraph
+│   ├── voice/              — VAD, STT, TTS, full-duplex pipeline
+│   ├── channels/           — channel framework dispatcher
+│   ├── lora/               — continuous LoRA fine-tuning
+│   ├── infra/              — HuggingFace Hub + SMB/NVMe storage client
+│   ├── tts/ stt/           — Piper, Whisper, NeMo Parakeet
+│   └── config/             — schema validation, env loading
+├── extensions/             — 37 channel plugins (Discord, Slack, Telegram…)
+├── skills/                 — 50+ bundled MCP skills
+├── apps/                   — macOS · iOS (WatchKit) · Android native apps
+├── packages/               — clawdbot, moltbot workspace packages
+├── ui/                     — web UI (Vite + Vitest)
+├── docs/                   — Mintlify docs site (EN / ZH-CN / JA)
+├── deploy/                 — Proxmox automation scripts
+├── repos/                  — 8 upstream feature submodules
+├── test/                   — E2E + integration tests
+├── docker-compose.yml
+├── install-ubuntu.sh
+├── openclaw.json           — generated by `pnpm openclaw init`
+└── .env.example
 ```
+
+---
 
 ## Configuration
 
-`openclaw.json` — generated by `pnpm openclaw init`:
+Minimal `openclaw.json` (generated by `pnpm openclaw init`):
 
 ```jsonc
 {
   "version": "2.0.0",
   "useCloudModels": false,
-  "agent": { "defaultModel": "llama3.2:3b", "maxTurns": 100 },
+  "agent": {
+    "defaultModel": "llama3.2:3b",
+    "maxTurns": 100
+  },
   "gateway": {
     "host": "127.0.0.1",
     "port": 3100,
-    "allowedOrigins": ["http://localhost:3101", "http://localhost:5180"],
+    "allowedOrigins": ["http://localhost:3101", "http://localhost:5180"]
   },
-  "memory": { "backend": "hybrid", "maxNodes": 10000 },
-  "sandbox": { "enabled": true, "runtime": "wasm" },
-  "discovery": { "enabled": true },
+  "council": {
+    "preset": "OPENCLAW_COUNCIL",
+    "consensusThreshold": 0.75,
+    "maxDeliberationRounds": 3,
+    "timeoutMs": 300000,
+    "requireCloudApproval": true
+  },
+  "memory": {
+    "backend": "hybrid",
+    "maxNodes": 10000
+  },
+  "sandbox": {
+    "enabled": true,
+    "runtime": "wasm"
+  },
+  "discovery": {
+    "enabled": true
+  }
 }
 ```
 
-See `src/config/schema.ts` for full JSON Schema.
+Full schema: `src/config/schema.ts`
+
+---
 
 ## Testing
 
-1,375+ test files across src/, test/, and extensions/:
-
 ```bash
-pnpm test                # Full suite (parallel, Vitest)
-pnpm test:fast           # Unit tests only
-pnpm test:coverage       # With V8 coverage
-pnpm test:all            # Full CI pipeline: lint, build, unit, e2e, live, docker
+pnpm test                  # all tests
+pnpm test:unit             # unit tests only
+pnpm test:integration      # integration tests
+pnpm test:e2e              # end-to-end tests
+pnpm test:coverage         # coverage report
 ```
 
-Multiple Vitest configurations for different scopes: unit, e2e, gateway, extensions, and live tests. Coverage thresholds enforced at 70% lines/functions/statements and 55% branches.
+**1,375+ tests** across 4 Vitest configs. Coverage thresholds enforced in CI:
 
-Covers: config, council, CSRF, rate limiting, graph memory, Neo4j, SQL, RAG, RBAC, sandbox, skills, vector store, smart router, ClawHub, HuggingFace hub, personality, providers, agents, gateway, Docker, and more.
+| Metric | Threshold |
+|--------|-----------|
+| Statements | 80% |
+| Branches | 75% |
+| Functions | 80% |
+| Lines | 80% |
 
-### Build Toolchain
-
-| Tool              | Purpose             |
-| ----------------- | ------------------- |
-| TypeScript ^5.9.3 | Type checking       |
-| tsdown ^0.20.3    | Bundler             |
-| Vitest ^4.0.18    | Test runner         |
-| oxlint ^1.49.0    | Linter (type-aware) |
-| pnpm 10.23.0      | Package manager     |
-| Node.js >= 22.12  | Runtime             |
+---
 
 ## CLI Reference
 
 ```bash
-pnpm openclaw init       # Generate config
-pnpm openclaw start      # Start gateway + agent
-pnpm openclaw validate   # Validate config
-pnpm openclaw status     # System status
-pnpm start               # Start everything
-pnpm build               # Compile TypeScript
-pnpm test                # Run tests
-pnpm lint                # oxlint analysis
+pnpm openclaw init          # interactive setup wizard
+pnpm openclaw start         # start gateway + agent daemon
+pnpm openclaw stop          # stop daemon
+pnpm openclaw status        # show running services
+pnpm openclaw council       # inspect council members + metrics
+pnpm openclaw skills        # list installed skills
+pnpm openclaw skills add    # install a skill from ClawHub
+pnpm openclaw models        # list downloaded models
+pnpm openclaw logs          # tail logs (gateway / agent / council)
+pnpm openclaw upgrade       # pull upstream + rebuild
 ```
+
+---
 
 ## Contributing
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for guidelines, maintainer list, and PR expectations. Project vision and priorities are in [`VISION.md`](VISION.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [VISION.md](VISION.md) for guidelines and project direction.
+
+To update all upstream submodules:
+
+```bash
+./setup-repos.sh --update
+```
+
+---
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).
+
+Upstream projects retain their own licences. See each `repos/*/LICENSE` for details.
