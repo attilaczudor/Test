@@ -4,7 +4,7 @@
 # Architecture:
 #   This repo (Test) = your fork of openclaw/openclaw
 #   AttiClaw/        = YOUR app (standalone, not a submodule)
-#   repos/           = upstream feature sources (submodules):
+#   repositories/           = upstream feature sources (submodules):
 #     clawx/                     ← ValueCell-ai/ClawX (desktop UI, Electron)
 #     ironclaw/                  ← nearai/ironclaw (AI agent infrastructure)
 #     llama.cpp/                 ← ggml-org/llama.cpp (inference engine)
@@ -30,14 +30,14 @@ cd "$SCRIPT_DIR"
 
 # ── Upstream mappings (fork → upstream) ─────────────────────────
 declare -A UPSTREAMS=(
-  ["repos/clawx"]="https://github.com/ValueCell-ai/ClawX"
-  ["repos/ironclaw"]="https://github.com/nearai/ironclaw"
-  ["repos/llama.cpp"]="https://github.com/ggml-org/llama.cpp"
-  ["repos/awesome-openclaw-usecases"]="https://github.com/anthropics/awesome-openclaw-usecases"
-  ["repos/nanobot"]="https://github.com/HKUDS/nanobot"
-  ["repos/picoclaw"]="https://github.com/sipeed/picoclaw"
-  ["repos/zeroclaw"]="https://github.com/zeroclaw-labs/zeroclaw"
-  ["repos/artemis"]="https://github.com/Stanford-Trinity/ARTEMIS"
+  ["repositories/clawx"]="https://github.com/ValueCell-ai/ClawX"
+  ["repositories/ironclaw"]="https://github.com/nearai/ironclaw"
+  ["repositories/llama.cpp"]="https://github.com/ggml-org/llama.cpp"
+  ["repositories/awesome-openclaw-usecases"]="https://github.com/anthropics/awesome-openclaw-usecases"
+  ["repositories/nanobot"]="https://github.com/HKUDS/nanobot"
+  ["repositories/picoclaw"]="https://github.com/sipeed/picoclaw"
+  ["repositories/zeroclaw"]="https://github.com/zeroclaw-labs/zeroclaw"
+  ["repositories/artemis"]="https://github.com/Stanford-Trinity/ARTEMIS"
 )
 
 # ── Initialize submodules ───────────────────────────────────────
@@ -94,7 +94,7 @@ update_upstreams() {
   echo ""
   echo -e "${GREEN}All upstreams fetched.${NC}"
   echo -e "To merge upstream changes into a submodule:"
-  echo -e "  cd repos/ironclaw && git merge upstream/main"
+  echo -e "  cd repositories/ironclaw && git merge upstream/main"
 }
 
 # ── Status ──────────────────────────────────────────────────────
@@ -105,7 +105,7 @@ show_status() {
   echo "  . (this repo)        → fork of openclaw/openclaw"
   echo "  AttiClaw/            → YOUR app (standalone, not submodule)"
 
-  for submod in repos/clawx repos/ironclaw repos/llama.cpp repos/awesome-openclaw-usecases repos/nanobot repos/picoclaw repos/zeroclaw repos/artemis; do
+  for submod in repositories/clawx repositories/ironclaw repositories/llama.cpp repositories/awesome-openclaw-usecases repositories/nanobot repositories/picoclaw repositories/zeroclaw repositories/artemis; do
     if [ -d "$submod/.git" ] || [ -f "$submod/.git" ]; then
       echo -e "  ${submod}/  → submodule: ${GREEN}initialized${NC}"
     else

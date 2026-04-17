@@ -40,7 +40,7 @@ export default defineConfig({
     ],
     setupFiles: process.env.OPENCLAW_FULL_SETUP ? ["test/setup.ts"] : [],
     exclude: [
-      "repos/clawx/**",
+      "repositories/clawx/**",
       "dist/**",
       "apps/macos/**",
       "apps/macos/.build/**",

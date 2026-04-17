@@ -1,31 +1,31 @@
-[submodule "repos/clawx"]
-	path = repos/clawx
+[submodule "repositories/clawx"]
+	path = repositories/clawx
 	url = https://github.com/attilaczudor/ClawX
 
-[submodule "repos/ironclaw"]
-	path = repos/ironclaw
+[submodule "repositories/ironclaw"]
+	path = repositories/ironclaw
 	url = https://github.com/attilaczudor/ironclaw
 
-[submodule "repos/llama.cpp"]
-	path = repos/llama.cpp
+[submodule "repositories/llama.cpp"]
+	path = repositories/llama.cpp
 	url = https://github.com/attilaczudor/llama.cpp
 
-[submodule "repos/awesome-openclaw-usecases"]
-	path = repos/awesome-openclaw-usecases
+[submodule "repositories/awesome-openclaw-usecases"]
+	path = repositories/awesome-openclaw-usecases
 	url = https://github.com/attilaczudor/awesome-openclaw-usecases
 
-[submodule "repos/nanobot"]
-	path = repos/nanobot
+[submodule "repositories/nanobot"]
+	path = repositories/nanobot
 	url = https://github.com/attilaczudor/nanobot
 
-[submodule "repos/picoclaw"]
-	path = repos/picoclaw
+[submodule "repositories/picoclaw"]
+	path = repositories/picoclaw
 	url = https://github.com/attilaczudor/picoclaw
 
-[submodule "repos/zeroclaw"]
-	path = repos/zeroclaw
+[submodule "repositories/zeroclaw"]
+	path = repositories/zeroclaw
 	url = https://github.com/attilaczudor/zeroclaw
 
-[submodule "repos/artemis"]
-	path = repos/artemis
+[submodule "repositories/artemis"]
+	path = repositories/artemis
 	url = https://github.com/attilaczudor/ARTEMIS

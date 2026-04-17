@@ -196,18 +196,18 @@ AttiClaw integrates directly with HuggingFace Hub:
 
 ## Upstream Feature Sources
 
-Eight upstream repositories are tracked as git submodules under `repos/`. Run `./setup-repos.sh --update` to pull the latest from all upstreams.
+Eight upstream repositories are tracked as git submodules under `repositories/`. Run `./setup-repos.sh --update` to pull the latest from all upstreams.
 
 | Submodule | Upstream | What it brings |
 |-----------|----------|----------------|
-| `repos/clawx` | [ValueCell-ai/ClawX](https://github.com/ValueCell-ai/ClawX) | Electron desktop UI, React + Zustand |
-| `repos/ironclaw` | [nearai/ironclaw](https://github.com/nearai/ironclaw) | Distributed orchestration, Near AI infra |
-| `repos/llama.cpp` | [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp) | GGUF inference engine |
-| `repos/zeroclaw` | [zeroclaw-labs/zeroclaw](https://github.com/zeroclaw-labs/zeroclaw) | Zero-shot agent framework |
-| `repos/nanobot` | [HKUDS/nanobot](https://github.com/HKUDS/nanobot) | Lightweight agent (HKU Data Science) |
-| `repos/picoclaw` | [sipeed/picoclaw](https://github.com/sipeed/picoclaw) | Edge deployment on RISC-V hardware |
-| `repos/artemis` | [Stanford-Trinity/ARTEMIS](https://github.com/Stanford-Trinity/ARTEMIS) | AI research framework (Stanford) |
-| `repos/awesome-openclaw-usecases` | [anthropics/awesome-openclaw-usecases](https://github.com/anthropics/awesome-openclaw-usecases) | 29 curated use cases |
+| `repositories/clawx` | [ValueCell-ai/ClawX](https://github.com/ValueCell-ai/ClawX) | Electron desktop UI, React + Zustand |
+| `repositories/ironclaw` | [nearai/ironclaw](https://github.com/nearai/ironclaw) | Distributed orchestration, Near AI infra |
+| `repositories/llama.cpp` | [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp) | GGUF inference engine |
+| `repositories/zeroclaw` | [zeroclaw-labs/zeroclaw](https://github.com/zeroclaw-labs/zeroclaw) | Zero-shot agent framework |
+| `repositories/nanobot` | [HKUDS/nanobot](https://github.com/HKUDS/nanobot) | Lightweight agent (HKU Data Science) |
+| `repositories/picoclaw` | [sipeed/picoclaw](https://github.com/sipeed/picoclaw) | Edge deployment on RISC-V hardware |
+| `repositories/artemis` | [Stanford-Trinity/ARTEMIS](https://github.com/Stanford-Trinity/ARTEMIS) | AI research framework (Stanford) |
+| `repositories/awesome-openclaw-usecases` | [anthropics/awesome-openclaw-usecases](https://github.com/anthropics/awesome-openclaw-usecases) | 29 curated use cases |
 
 ```bash
 ./setup-repos.sh              # init all + set upstream remotes
@@ -629,7 +629,7 @@ atticlaw/
 ├── ui/                     — web UI (Vite + Vitest)
 ├── docs/                   — Mintlify docs site (EN / ZH-CN / JA)
 ├── deploy/                 — Proxmox automation scripts
-├── repos/                  — 8 upstream feature submodules
+├── repositories/                  — 8 upstream feature submodules
 ├── test/                   — E2E + integration tests
 ├── docker-compose.yml
 ├── install-ubuntu.sh
@@ -735,4 +735,4 @@ To update all upstream submodules:
 
 MIT — see [LICENSE](LICENSE).
 
-Upstream projects retain their own licences. See each `repos/*/LICENSE` for details.
+Upstream projects retain their own licences. See each `repositories/*/LICENSE` for details.

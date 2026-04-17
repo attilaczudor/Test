@@ -17,7 +17,7 @@
 #   OPENCLAW_DIR        Install directory (default: /opt/openclaw)
 #   OPENCLAW_BRANCH     Git branch to clone (default: main)
 #   OPENCLAW_SKIP_DB    Skip database provisioning (1 to skip)
-#   OPENCLAW_SKIP_CLAWX Skip ClawX desktop build in repos/clawx (1 to skip)
+#   OPENCLAW_SKIP_CLAWX Skip ClawX desktop build in repositories/clawx (1 to skip)
 # ──────────────────────────────────────────────────────────────────
 
 set -euo pipefail
@@ -63,7 +63,7 @@ usage() {
 Usage: install.sh [OPTIONS]
 
 Options:
-  --all             Full install: core + databases + ClawX (repos/clawx)
+  --all             Full install: core + databases + ClawX (repositories/clawx)
   --core            Core only: source + dependencies + build (no DBs, no ClawX)
   --docker          Deploy full stack via Docker Compose
   --dir PATH        Install directory (default: /opt/openclaw)
@@ -327,7 +327,7 @@ fi
 
 cd "${OPENCLAW_DIR}"
 
-# Initialize submodules (repos/clawx, repos/ironclaw, etc.)
+# Initialize submodules (repositories/clawx, repositories/ironclaw, etc.)
 if [[ -f ".gitmodules" ]]; then
   info "Initializing git submodules..."
   git submodule update --init --recursive
@@ -438,7 +438,7 @@ if [[ "$SKIP_CLAWX" == "1" || "$MODE" == "core" ]]; then
   info "Skipping ClawX desktop app build"
   ok "ClawX skipped"
 else
-  CLAWX_DIR="${OPENCLAW_DIR}/repos/clawx"
+  CLAWX_DIR="${OPENCLAW_DIR}/repositories/clawx"
   if [[ -d "$CLAWX_DIR" ]]; then
     info "Building ClawX desktop app..."
     cd "$CLAWX_DIR"
@@ -560,7 +560,7 @@ echo "    pnpm openclaw status           # System status"
 echo "    pnpm test                      # Run test suite (543+ tests)"
 echo ""
 echo "  Desktop App (ClawX):"
-echo "    cd ${OPENCLAW_DIR}/repos/clawx"
+echo "    cd ${OPENCLAW_DIR}/repositories/clawx"
 echo "    pnpm dev                       # Start in dev mode"
 echo ""
 echo "  Proxmox Deployment:"
