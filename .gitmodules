@@ -9,23 +9,3 @@
 [submodule "repositories/llama.cpp"]
 	path = repositories/llama.cpp
 	url = https://github.com/attilaczudor/llama.cpp
-
-[submodule "repositories/awesome-openclaw-usecases"]
-	path = repositories/awesome-openclaw-usecases
-	url = https://github.com/attilaczudor/awesome-openclaw-usecases
-
-[submodule "repositories/nanobot"]
-	path = repositories/nanobot
-	url = https://github.com/attilaczudor/nanobot
-
-[submodule "repositories/picoclaw"]
-	path = repositories/picoclaw
-	url = https://github.com/attilaczudor/picoclaw
-
-[submodule "repositories/zeroclaw"]
-	path = repositories/zeroclaw
-	url = https://github.com/attilaczudor/zeroclaw
-
-[submodule "repositories/artemis"]
-	path = repositories/artemis
-	url = https://github.com/attilaczudor/ARTEMIS
