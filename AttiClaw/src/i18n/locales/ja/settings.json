@@ -1,0 +1,25 @@
+{
+  "theme": {
+    "title": "\u30c6\u30fc\u30de",
+    "dark": "\u30c0\u30fc\u30af",
+    "light": "\u30e9\u30a4\u30c8",
+    "system": "\u30b7\u30b9\u30c6\u30e0"
+  },
+  "language": {
+    "title": "\u8a00\u8a9e",
+    "en": "\u82f1\u8a9e",
+    "zh": "\u4e2d\u56fd\u8a9e",
+    "ja": "\u65e5\u672c\u8a9e"
+  },
+  "storage": {
+    "title": "\u30b9\u30c8\u30ec\u30fc\u30b8",
+    "smbHost": "SMB \u30db\u30b9\u30c8",
+    "smbShare": "SMB \u5171\u6709",
+    "smbUsername": "\u30e6\u30fc\u30b6\u30fc\u540d",
+    "smbPassword": "\u30d1\u30b9\u30ef\u30fc\u30c9",
+    "smbMount": "\u30de\u30a6\u30f3\u30c8\u30dd\u30a4\u30f3\u30c8",
+    "smbPort": "\u30dd\u30fc\u30c8",
+    "nvmePath": "NVMe \u30d1\u30b9",
+    "nvmeDrive": "NVMe \u30c9\u30e9\u30a4\u30d6"
+  }
+}

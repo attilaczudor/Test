@@ -1,0 +1,76 @@
+{
+  "title": "Repos & Plugins",
+  "description": "Repository plugins, skill directories, and upstream feature projects",
+  "tabs": {
+    "sources": "Repos",
+    "labels": "Labels"
+  },
+  "search": {
+    "placeholder": "Search repos...",
+    "noResults": "No repos found",
+    "noResultsHint": "Try a different search or label filter"
+  },
+  "filters": {
+    "all": "All"
+  },
+  "actions": {
+    "open": "Open",
+    "update": "Update",
+    "labels": "Labels",
+    "addSource": "Add Repo",
+    "manageLabels": "Manage Labels",
+    "add": "Add",
+    "save": "Save",
+    "create": "Create",
+    "cancel": "Cancel",
+    "done": "Done"
+  },
+  "fields": {
+    "name": "Name",
+    "url": "URL",
+    "description": "Description",
+    "labels": "Labels",
+    "labelName": "Label Name",
+    "labelColor": "Color",
+    "preview": "Preview"
+  },
+  "labels": {
+    "description": "Organize your repos with labels. Built-in labels cannot be deleted.",
+    "create": "New Label",
+    "builtIn": "Built-in",
+    "source": "repo",
+    "sources": "repos"
+  },
+  "dialogs": {
+    "addSource": "Add Repo",
+    "createLabel": "Create Label",
+    "editLabel": "Edit Label",
+    "manageLabels": "Manage Labels",
+    "assignLabels": "Assign Labels",
+    "assignLabelsHint": "Toggle labels for {{name}}"
+  },
+  "plugin": {
+    "core": "Core",
+    "capabilities": "Capabilities",
+    "version": "v{{version}}",
+    "lastUpdated": "Updated {{date}}",
+    "neverUpdated": "Never synced"
+  },
+  "update": {
+    "sidebar": {
+      "title": "Update Plan",
+      "subtitle": "Council review required before implementation",
+      "summary": "Summary",
+      "steps": "Steps",
+      "gitCommit": "Git commit",
+      "impact": "Impact",
+      "impactLow": "Low",
+      "impactMedium": "Medium",
+      "impactHigh": "High",
+      "implement": "Implement",
+      "later": "Later",
+      "implementing": "Implementing…",
+      "implemented": "Updated successfully"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "chat": "Chat",
+    "models": "Models",
+    "skills": "Skills",
+    "repositories": "Repositories",
+    "settings": "Settings"
+  },
+  "app": {
+    "name": "AttiClaw",
+    "description": "Personal AI Model Management"
+  }
+}

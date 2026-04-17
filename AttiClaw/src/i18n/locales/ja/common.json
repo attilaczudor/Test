@@ -1,0 +1,14 @@
+{
+  "sidebar": {
+    "dashboard": "\u30c0\u30c3\u30b7\u30e5\u30dc\u30fc\u30c9",
+    "chat": "\u30c1\u30e3\u30c3\u30c8",
+    "models": "\u30e2\u30c7\u30eb",
+    "skills": "\u30b9\u30ad\u30eb",
+    "repositories": "\u30ea\u30dd\u30b8\u30c8\u30ea",
+    "settings": "\u8a2d\u5b9a"
+  },
+  "app": {
+    "name": "AttiClaw",
+    "description": "\u500b\u4eba AI \u30e2\u30c7\u30eb\u7ba1\u7406"
+  }
+}

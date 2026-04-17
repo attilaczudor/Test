@@ -1,0 +1,31 @@
+[submodule "repos/clawx"]
+	path = repos/clawx
+	url = https://github.com/attilaczudor/ClawX
+
+[submodule "repos/ironclaw"]
+	path = repos/ironclaw
+	url = https://github.com/attilaczudor/ironclaw
+
+[submodule "repos/llama.cpp"]
+	path = repos/llama.cpp
+	url = https://github.com/attilaczudor/llama.cpp
+
+[submodule "repos/awesome-openclaw-usecases"]
+	path = repos/awesome-openclaw-usecases
+	url = https://github.com/attilaczudor/awesome-openclaw-usecases
+
+[submodule "repos/nanobot"]
+	path = repos/nanobot
+	url = https://github.com/attilaczudor/nanobot
+
+[submodule "repos/picoclaw"]
+	path = repos/picoclaw
+	url = https://github.com/attilaczudor/picoclaw
+
+[submodule "repos/zeroclaw"]
+	path = repos/zeroclaw
+	url = https://github.com/attilaczudor/zeroclaw
+
+[submodule "repos/artemis"]
+	path = repos/artemis
+	url = https://github.com/attilaczudor/ARTEMIS

@@ -1,0 +1,50 @@
+{
+  "search": {
+    "placeholder": "Search models...",
+    "searching": "Searching...",
+    "noResults": "No models found"
+  },
+  "categories": {
+    "all": "All",
+    "recommended": "Recommended",
+    "chat": "Chat",
+    "code": "Code",
+    "voice": "Voice",
+    "vision": "Vision",
+    "embeddings": "Embeddings",
+    "moe": "MoE",
+    "local": "My Models"
+  },
+  "actions": {
+    "download": "Download",
+    "load": "Load",
+    "unload": "Unload",
+    "remove": "Remove",
+    "approve": "Approve",
+    "dismiss": "Dismiss"
+  },
+  "status": {
+    "available": "Available",
+    "downloading": "Downloading",
+    "stored": "Stored",
+    "loading": "Loading",
+    "loaded": "Loaded",
+    "active": "Active",
+    "error": "Error"
+  },
+  "storage": {
+    "smb": "SMB",
+    "nvme": "NVMe",
+    "cache": "Cache",
+    "smbConfig": "SMB Configuration",
+    "nvmeConfig": "NVMe Configuration",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "connect": "Connect",
+    "disconnect": "Disconnect"
+  },
+  "tabs": {
+    "browse": "Browse",
+    "storage": "Storage"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "theme": {
+    "title": "Theme",
+    "dark": "Dark",
+    "light": "Light",
+    "system": "System"
+  },
+  "language": {
+    "title": "Language",
+    "en": "English",
+    "zh": "Chinese",
+    "ja": "Japanese"
+  },
+  "storage": {
+    "title": "Storage",
+    "smbHost": "SMB Host",
+    "smbShare": "SMB Share",
+    "smbUsername": "Username",
+    "smbPassword": "Password",
+    "smbMount": "Mount Point",
+    "smbPort": "Port",
+    "nvmePath": "NVMe Path",
+    "nvmeDrive": "NVMe Drive"
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "title": "仓库与插件",
+  "description": "仓库插件、技能目录和上游功能项目",
+  "tabs": {
+    "sources": "仓库",
+    "labels": "标签"
+  },
+  "search": {
+    "placeholder": "搜索仓库...",
+    "noResults": "未找到仓库",
+    "noResultsHint": "请尝试不同的搜索或标签筛选"
+  },
+  "filters": {
+    "all": "全部"
+  },
+  "actions": {
+    "open": "打开",
+    "update": "更新",
+    "labels": "标签",
+    "addSource": "添加仓库",
+    "manageLabels": "管理标签",
+    "add": "添加",
+    "save": "保存",
+    "create": "创建",
+    "cancel": "取消",
+    "done": "完成"
+  },
+  "fields": {
+    "name": "名称",
+    "url": "链接",
+    "description": "描述",
+    "labels": "标签",
+    "labelName": "标签名称",
+    "labelColor": "颜色",
+    "preview": "预览"
+  },
+  "labels": {
+    "description": "使用标签组织您的仓库。内置标签不可删除。",
+    "create": "新建标签",
+    "builtIn": "内置",
+    "source": "个仓库",
+    "sources": "个仓库"
+  },
+  "dialogs": {
+    "addSource": "添加仓库",
+    "createLabel": "创建标签",
+    "editLabel": "编辑标签",
+    "manageLabels": "管理标签",
+    "assignLabels": "分配标签",
+    "assignLabelsHint": "切换 {{name}} 的标签"
+  },
+  "plugin": {
+    "core": "核心",
+    "capabilities": "功能",
+    "version": "v{{version}}",
+    "lastUpdated": "{{date}} 更新",
+    "neverUpdated": "从未同步"
+  },
+  "update": {
+    "sidebar": {
+      "title": "更新计划",
+      "subtitle": "实施前需要议会审批",
+      "summary": "摘要",
+      "steps": "步骤",
+      "gitCommit": "Git 提交",
+      "impact": "影响",
+      "impactLow": "低",
+      "impactMedium": "中",
+      "impactHigh": "高",
+      "implement": "实施",
+      "later": "稍后",
+      "implementing": "实施中…",
+      "implemented": "更新成功"
+    }
+  }
+}

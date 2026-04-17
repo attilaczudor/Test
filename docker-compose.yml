@@ -1,0 +1,158 @@
+# ──────────────────────────────────────────────────────────────
+# OpenClaw v2 — Docker Compose
+#
+# Full stack: OpenClaw + Qdrant + Neo4j + MariaDB
+# Reference host: 16-core / 128 GB RAM
+#
+# Resource budget (Docker mode):
+#   openclaw    4 cpus / 16 GB   (agent + gateway)
+#   qdrant      2 cpus /  4 GB   (vector store)
+#   neo4j       2 cpus /  8 GB   (knowledge graph)
+#   mariadb     2 cpus /  4 GB   (relational DB)
+#   ─────────────────────────────
+#   total      10 cpus / 32 GB   (leaves 6c/96GB for host + council LLMs)
+#
+# Usage:
+#   docker compose up -d              # Start everything
+#   docker compose up -d openclaw     # Just OpenClaw (in-memory mode)
+#   docker compose logs -f openclaw   # Follow logs
+#   docker compose down               # Stop everything
+# ──────────────────────────────────────────────────────────────
+
+services:
+  # ── OpenClaw Gateway + Agent ──────────────────────────────
+  openclaw:
+    build: .
+    container_name: openclaw
+    restart: unless-stopped
+    ports:
+      - "3100:3100"   # Gateway (WebSocket + REST)
+      - "3101:3101"   # Web UI
+    volumes:
+      - openclaw-data:/app/data
+      - ./openclaw.json:/app/openclaw.json:ro
+    environment:
+      - NODE_ENV=production
+      - OPENCLAW_CONFIG=/app/openclaw.json
+    depends_on:
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      mariadb:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 16G
+        reservations:
+          cpus: '2'
+          memory: 4G
+    # Use host network if Ollama runs on the host machine:
+    # network_mode: host
+    networks:
+      - openclaw-net
+
+  # ── Qdrant Vector Database ────────────────────────────────
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: openclaw-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"   # REST API
+      - "6334:6334"   # gRPC
+    volumes:
+      - qdrant-data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - openclaw-net
+
+  # ── Neo4j Knowledge Graph ─────────────────────────────────
+  neo4j:
+    image: neo4j:5
+    container_name: openclaw-neo4j
+    restart: unless-stopped
+    ports:
+      - "7474:7474"   # HTTP API
+      - "7687:7687"   # Bolt protocol
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    environment:
+      - NEO4J_AUTH=neo4j/openclaw-graph
+      - NEO4J_server_memory_heap_initial__size=1g
+      - NEO4J_server_memory_heap_max__size=3g
+      - NEO4J_server_memory_pagecache_size=2g
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 8G
+        reservations:
+          cpus: '1'
+          memory: 4G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7474"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - openclaw-net
+
+  # ── MariaDB Relational Database ──────────────────────────────
+  mariadb:
+    image: mariadb:11
+    container_name: openclaw-mariadb
+    restart: unless-stopped
+    ports:
+      - "3306:3306"   # MySQL protocol
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    environment:
+      - MARIADB_ROOT_PASSWORD=openclaw-root
+      - MARIADB_DATABASE=openclaw
+      - MARIADB_USER=openclaw
+      - MARIADB_PASSWORD=openclaw-sql
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - openclaw-net
+
+networks:
+  openclaw-net:
+    driver: bridge
+
+volumes:
+  openclaw-data:
+  qdrant-data:
+  neo4j-data:
+  neo4j-logs:
+  mariadb-data:

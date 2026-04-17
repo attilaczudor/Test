@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.js.map
+.env
+.env.*
+coverage/
+.DS_Store
+*.log
+ClawX/.git/
+ClawX/node_modules/
+ClawX/dist/

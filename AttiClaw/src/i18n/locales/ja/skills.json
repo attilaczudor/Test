@@ -1,0 +1,76 @@
+{
+  "title": "リポジトリ & プラグイン",
+  "description": "リポジトリプラグイン、スキルディレクトリ、アップストリーム機能プロジェクト",
+  "tabs": {
+    "sources": "リポジトリ",
+    "labels": "ラベル"
+  },
+  "search": {
+    "placeholder": "リポジトリを検索...",
+    "noResults": "リポジトリが見つかりません",
+    "noResultsHint": "別の検索やラベルフィルターをお試しください"
+  },
+  "filters": {
+    "all": "すべて"
+  },
+  "actions": {
+    "open": "開く",
+    "update": "更新",
+    "labels": "ラベル",
+    "addSource": "リポジトリを追加",
+    "manageLabels": "ラベル管理",
+    "add": "追加",
+    "save": "保存",
+    "create": "作成",
+    "cancel": "キャンセル",
+    "done": "完了"
+  },
+  "fields": {
+    "name": "名前",
+    "url": "URL",
+    "description": "説明",
+    "labels": "ラベル",
+    "labelName": "ラベル名",
+    "labelColor": "色",
+    "preview": "プレビュー"
+  },
+  "labels": {
+    "description": "ラベルでリポジトリを整理しましょう。組み込みラベルは削除できません。",
+    "create": "新しいラベル",
+    "builtIn": "組み込み",
+    "source": "リポジトリ",
+    "sources": "リポジトリ"
+  },
+  "dialogs": {
+    "addSource": "リポジトリを追加",
+    "createLabel": "ラベルを作成",
+    "editLabel": "ラベルを編集",
+    "manageLabels": "ラベル管理",
+    "assignLabels": "ラベルを割り当て",
+    "assignLabelsHint": "{{name}} のラベルを切り替え"
+  },
+  "plugin": {
+    "core": "コア",
+    "capabilities": "機能",
+    "version": "v{{version}}",
+    "lastUpdated": "{{date}} 更新",
+    "neverUpdated": "未同期"
+  },
+  "update": {
+    "sidebar": {
+      "title": "更新プラン",
+      "subtitle": "実装前にコンシル承認が必要です",
+      "summary": "概要",
+      "steps": "ステップ",
+      "gitCommit": "Gitコミット",
+      "impact": "影響",
+      "impactLow": "低",
+      "impactMedium": "中",
+      "impactHigh": "高",
+      "implement": "実装",
+      "later": "後で",
+      "implementing": "実装中…",
+      "implemented": "更新成功"
+    }
+  }
+}
